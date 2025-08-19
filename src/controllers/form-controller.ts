@@ -53,7 +53,7 @@ export const submitForm = async (req: Request, res: Response) => {
     await updateSession(formConfig.url, formData,submissionData.transaction_id);
     await callMockService(domain,submissionData)
 
-    res.json({ success: true, submission_id : "DUMMY_SUBMISSIO_ID" });
+    res.json({ success: true, submission_id : "DUMMY_SUBMISSION_ID" });
   } catch (error) {
     console.error('Form submission error:', error);
     res.status(500).json({ error: 'Failed to process form submission' });
