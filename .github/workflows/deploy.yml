@@ -60,23 +60,6 @@ jobs:
           echo "REDIS_PORT=${{ vars.REDIS_PORT }}" >> \$REPO_DIR/.env
           echo "MOCK_SERVICE_URL=${{ vars.MOCK_SERVICE_URL }}" >> \$REPO_DIR/.env
           echo "BACKEND_URL=${{ vars.BACKEND_URL }}" >> \$REPO_DIR/.env
-
-          EOF
-
-      - name: Verify .env and docker-compose.yml files
-        run: |
-          ssh -i ./key.pem ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} <<EOF
-          REPO_DIR=~/ONDC-automation-framework/form_service_dev
-          # Check if .env and docker-compose.yml files exist
-          if [ ! -f \\$REPO_DIR/.env ]; then
-            echo ".env file not found in \$REPO_DIR!"
-            exit 1
-          fi
-          if [ ! -f \\$REPO_DIR/docker-compose.yml ]; then
-            echo "docker-compose.yml file not found in \$REPO_DIR!"
-            exit 1
-          fi
-          echo ".env and docker-compose.yml files found."
           EOF
 
 
@@ -87,5 +70,17 @@ jobs:
           REPO_DIR=~/ONDC-automation-framework/form_service_dev
           cd \$REPO_DIR
 
+          # Ensure the .env and docker-compose.yml files exist
+          if [ ! -f .env ]; then
+            echo ".env file not found!"
+            exit 1
+          fi
+
+          if [ ! -f docker-compose.yml ]; then
+            echo "docker-compose.yml file not found!"
+            exit 1
+          fi
+
+          
           sudo docker compose up -d --build
           EOF
