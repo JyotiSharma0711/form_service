@@ -1,0 +1,28 @@
+domains:
+  - name: 'TRV14'
+    version: '2.0.0'
+    forms:
+      - name: "static-form"
+        url: "static-sample-form"
+        path: "TRV14/static-sample-form"
+        type: "static"
+        sessionUpdateFunction: "update-session.ts"
+        successRedirect: "https://example.com/success"
+      - name: "dynamic-form"
+        url: "dynamic-sample-form"
+        path: "TRV14/dynamic-sample-form"
+        type: "dynamic"
+        sessionUpdateFunction: "update-session.ts"
+        successRedirect: "https://example.com/success"
+      - name: "additional details"
+        url: "additional-details-form"
+        path: "TRV14/dynamic-sample-form"
+        type: "static"
+        sessionUpdateFunction: "update-session.ts"
+        successRedirect: "https://example.com/success"
+      - name: "test-form"
+        url: "test-sample-form"
+        path: "TRV14/test-sample-form"
+        type: "dynamic"
+        sessionUpdateFunction: "update-session.ts"
+        successRedirect: "https://example.com/success"
