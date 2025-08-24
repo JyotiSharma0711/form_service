@@ -4,6 +4,7 @@ import { centralConfigService } from '../config/central-config';
 import { updateSession } from '../services/session-service';
 import { callMockService } from '../utils/mock-service';
 import ejs from 'ejs';
+import { v4 as uuidv4 } from 'uuid';
 
 export const getForm = async (req: Request, res: Response) => {
   const { domain, formUrl } = req.params;
@@ -24,8 +25,8 @@ export const getForm = async (req: Request, res: Response) => {
 
   // Always load the form HTML from the config-specified path
   const htmlContent = formConfig.content;
-  const submissionData = {session_id:session_id,transaction_id:transaction_id,flow_id:flow_id}
-  const newContent = ejs.render(htmlContent, { actionUrl: submitUrl, submissionData:JSON.stringify(submissionData) });
+  // Only pass actionUrl for EJS rendering, session data will be handled by JavaScript
+  const newContent = ejs.render(htmlContent, { actionUrl: submitUrl });
   if(formConfig.type == "dynamic"){
     return res.set('Content-Type', 'application/html').send(newContent);
   }else{
@@ -35,9 +36,24 @@ export const getForm = async (req: Request, res: Response) => {
 
 export const submitForm = async (req: Request, res: Response) => {
   const { domain, formUrl } = req.params;
-  const formData = req.body;
-  const submissionData = JSON.parse(req.body.submissionData)
-  delete formData.submissionData
+  const formData = {...req.body};
+  
+  // Parse submissionData - it might already be parsed (JSON request) or a string (form request)
+  let submissionData;
+  if (typeof req.body.submissionData === 'string') {
+    submissionData = JSON.parse(req.body.submissionData);
+  } else if (typeof req.body.submissionData === 'object') {
+    submissionData = req.body.submissionData;
+  } else {
+    // If no submissionData, try to extract from query params for backward compatibility
+    submissionData = {
+      session_id: req.query.session_id,
+      transaction_id: req.query.transaction_id,
+      flow_id: req.query.flow_id
+    };
+  }
+  
+  delete formData.submissionData;
 
   // Determine the actual form URL to look up
   const actualFormUrl = domain ? `${domain}/${formUrl}` : formUrl;
@@ -53,7 +69,7 @@ export const submitForm = async (req: Request, res: Response) => {
     await updateSession(formConfig.url, formData,submissionData.transaction_id);
     await callMockService(domain,submissionData)
 
-    res.json({ success: true, submission_id : "DUMMY_SUBMISSION_ID" });
+    res.json({ success: true, submission_id : uuidv4() });
   } catch (error) {
     console.error('Form submission error:', error);
     res.status(500).json({ error: 'Failed to process form submission' });
