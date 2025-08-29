@@ -4,10 +4,11 @@ import { centralConfigService } from '../config/central-config';
 import { updateSession } from '../services/session-service';
 import { callMockService } from '../utils/mock-service';
 import ejs from 'ejs';
+import { randomUUID } from 'crypto';
 
 export const getForm = async (req: Request, res: Response) => {
   const { domain, formUrl } = req.params;
-  const { session_id,flow_id,transaction_id } = req.query;
+  const { session_id, flow_id, transaction_id } = req.query;
 
   // Determine the actual form URL to look up
   const actualFormUrl = domain ? `${domain}/${formUrl}` : formUrl;
@@ -24,20 +25,27 @@ export const getForm = async (req: Request, res: Response) => {
 
   // Always load the form HTML from the config-specified path
   const htmlContent = formConfig.content;
-  const submissionData = {session_id:session_id,transaction_id:transaction_id,flow_id:flow_id}
-  const newContent = ejs.render(htmlContent, { actionUrl: submitUrl, submissionData:JSON.stringify(submissionData) });
-  if(formConfig.type == "dynamic"){
+  const submissionData = {
+    session_id: session_id,
+    transaction_id: transaction_id,
+    flow_id: flow_id,
+  };
+  const newContent = ejs.render(htmlContent, {
+    actionUrl: submitUrl,
+    submissionData: JSON.stringify(submissionData),
+  });
+  if (formConfig.type == 'dynamic') {
     return res.set('Content-Type', 'application/html').send(newContent);
-  }else{
+  } else {
     return res.type('html').send(newContent);
-      }
+  }
 };
 
 export const submitForm = async (req: Request, res: Response) => {
   const { domain, formUrl } = req.params;
   const formData = req.body;
-  const submissionData = JSON.parse(req.body.submissionData)
-  delete formData.submissionData
+  const submissionData = JSON.parse(req.body.submissionData);
+  delete formData.submissionData;
 
   // Determine the actual form URL to look up
   const actualFormUrl = domain ? `${domain}/${formUrl}` : formUrl;
@@ -50,10 +58,13 @@ export const submitForm = async (req: Request, res: Response) => {
 
   try {
     // Update session with form data using the custom function
-    await updateSession(formConfig.url, formData,submissionData.transaction_id);
-    await callMockService(domain,submissionData)
-
-    res.json({ success: true, submission_id : "DUMMY_SUBMISSION_ID" });
+    console.log('Updating session with form data:', formData);
+    const submission_id = randomUUID();
+    await updateSession(formConfig.url, formData, submissionData.transaction_id);
+    console.log('Session updated successfully');
+    await callMockService(domain, submissionData, submission_id);
+    // console.log('Mock service called successfully');
+    res.json({ success: true, submission_id: submission_id });
   } catch (error) {
     console.error('Form submission error:', error);
     res.status(500).json({ error: 'Failed to process form submission' });
