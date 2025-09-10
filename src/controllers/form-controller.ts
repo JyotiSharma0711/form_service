@@ -21,7 +21,7 @@ export const getForm = async (req: Request, res: Response) => {
 
   // Get form service configuration for auto-injection
   const formServiceConfig = centralConfigService.getFormServiceConfig();
-  const submitUrl = `${formServiceConfig.baseUrl}/forms/${actualFormUrl}/submit`;
+  const submitUrl = `${formServiceConfig.baseUrl}/forms/${actualFormUrl}/submit?flow_id=${flow_id}&session_id=${session_id}&transaction_id=${transaction_id}`;
 
   // Always load the form HTML from the config-specified path
   const htmlContent = formConfig.content;
@@ -44,8 +44,17 @@ export const getForm = async (req: Request, res: Response) => {
 export const submitForm = async (req: Request, res: Response) => {
   const { domain, formUrl } = req.params;
   const formData = req.body;
-  const submissionData = JSON.parse(req.body.submissionData);
-  delete formData.submissionData;
+  const {session_id,flow_id,transaction_id} = req.query
+  
+  if(!session_id || !flow_id || !transaction_id){
+    return res.status(400).send({error:true, message:"session_id or flow_id or transaction_id not found in submission url "})
+  }
+
+  const submissionData : any = {
+    session_id:session_id,
+    flow_id:flow_id,
+    transaction_id:transaction_id
+  }
 
   // Determine the actual form URL to look up
   const actualFormUrl = domain ? `${domain}/${formUrl}` : formUrl;
