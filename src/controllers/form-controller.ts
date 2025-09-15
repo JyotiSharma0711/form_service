@@ -9,7 +9,6 @@ import { randomUUID } from 'crypto';
 export const getForm = async (req: Request, res: Response) => {
   const { domain, formUrl } = req.params;
   const { session_id, flow_id, transaction_id } = req.query;
-
   // Determine the actual form URL to look up
   const actualFormUrl = domain ? `${domain}/${formUrl}` : formUrl;
 
@@ -30,6 +29,7 @@ export const getForm = async (req: Request, res: Response) => {
     transaction_id: transaction_id,
     flow_id: flow_id,
   };
+
   const newContent = ejs.render(htmlContent, {
     actionUrl: submitUrl,
     submissionData: JSON.stringify(submissionData),
@@ -45,6 +45,8 @@ export const submitForm = async (req: Request, res: Response) => {
   const { domain, formUrl } = req.params;
   const formData = req.body;
   const {session_id,flow_id,transaction_id} = req.query
+
+  
   
   if(!session_id || !flow_id || !transaction_id){
     return res.status(400).send({error:true, message:"session_id or flow_id or transaction_id not found in submission url "})
@@ -69,6 +71,7 @@ export const submitForm = async (req: Request, res: Response) => {
     // Update session with form data using the custom function
     console.log('Updating session with form data:', formData);
     const submission_id = randomUUID();
+    formData.form_submission_id = submission_id;
     await updateSession(formConfig.url, formData, submissionData.transaction_id);
     console.log('Session updated successfully');
     await callMockService(domain, submissionData, submission_id);

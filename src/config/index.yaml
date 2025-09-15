@@ -26,3 +26,18 @@ domains:
         type: "dynamic"
         sessionUpdateFunction: "update-session.ts"
         successRedirect: "https://example.com/success"
+  - name: 'FIS12'
+    version: '2.0.2'
+    forms:
+      - name: "consumer_information_form"
+        url: "consumer_information_form"
+        path: "FIS12/consumer_information_form"
+        type: "dynamic"
+        sessionUpdateFunction: "update-session.ts"
+        successRedirect: "https://example.com/success"
+      - name: "loan_adjustment_form"
+        url: "loan_adjustment_form"
+        path: "FIS12/loan_adjustment_form"
+        type: "dynamic"
+        sessionUpdateFunction: "update-session.ts"
+        successRedirect: "https://example.com/success"
